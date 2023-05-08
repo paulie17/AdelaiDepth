@@ -157,11 +157,11 @@ def reconstruct_3D(depth, f):
         y = (v - cv) * depth / f
         z = depth
 
-    x = np.reshape(x, (width * height, 1)).astype(np.float)
-    y = np.reshape(y, (width * height, 1)).astype(np.float)
-    z = np.reshape(z, (width * height, 1)).astype(np.float)
+    x = np.reshape(x, (width * height, 1)).astype(np.float32)
+    y = np.reshape(y, (width * height, 1)).astype(np.float32)
+    z = np.reshape(z, (width * height, 1)).astype(np.float32)
     pcd = np.concatenate((x, y, z), axis=1)
-    pcd = pcd.astype(np.int)
+    pcd = pcd.astype(np.int16)
 
     # Compute normal map from the point cloud:
     xyz = torch.tensor(np.stack([x, y, z], axis=2),device='cuda',dtype=torch.float32).unsqueeze(0)
@@ -232,6 +232,7 @@ def reconstruct_from_depth(depth, rgb, dir, pcd_name, focal):
     depth = depth / depth.max() * 10000
 
     pcd, normals = reconstruct_3D(depth, f=focal)
+    
     rgb_n = np.reshape(rgb, (-1, 3))
     save_point_cloud(pcd, rgb_n, os.path.join(dir, pcd_name + '.ply'))
 

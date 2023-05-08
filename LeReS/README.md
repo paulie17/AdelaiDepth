@@ -1,3 +1,25 @@
+# How to run this fork
+
+Place the images you want to test in the "test_images" folder and then run:
+
+```bash
+# Monocular depth prediction with ResNet50 backbone
+python -m tools.test_depth --load_ckpt res50.pth --backbone resnet50
+
+# Monodular depth prediction with ResNet101 backbone
+python -m tools.test_depth --load_ckpt res101.pth --backbone resnext101
+
+# 3D Scene recovery with ResNet50 backbone
+python -m tools.test_shape --load_ckpt res50.pth --backbone resnet50
+
+#3D Scene recovery with ResNet 101 backbone
+python -m tools.test_shape --load_ckpt res101.pth --backbone resnext101
+
+```
+
+
+---
+
 # Best Paper Finalist: [Learning to Recover 3D Scene Shape from a Single Image](https://arxiv.org/abs/2012.09365)
 
 This repository contains the source code of the paper:
