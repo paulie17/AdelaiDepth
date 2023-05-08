@@ -78,7 +78,7 @@ def get_surface_normal(xyz, patch_size=5):
                   x * patch_x - left_flg * overlap:(x + 1) * patch_x + right_flg * overlap]
             ata = ATA[y * patch_y - top_flg * overlap:(y + 1) * patch_y + btm_flg * overlap,
                   x * patch_x - left_flg * overlap:(x + 1) * patch_x + right_flg * overlap]
-            n_img_tmp, _ = torch.solve(at1, ata)
+            n_img_tmp, _ = torch.linalg.solve(at1, ata)
 
             n_img_tmp_select = n_img_tmp[top_flg * overlap:patch_y + top_flg * overlap, left_flg * overlap:patch_x + left_flg * overlap, :, :]
             n_img[y * patch_y:y * patch_y + patch_y, x * patch_x:x * patch_x + patch_x, :, :] = n_img_tmp_select

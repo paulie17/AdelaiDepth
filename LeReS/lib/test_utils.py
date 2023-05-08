@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import torch
+from Train.lib.models.Surface_normal import get_surface_normalv2
 from torchsparse import SparseTensor
 from torchsparse.utils import sparse_collate_fn, sparse_quantize
 from plyfile import PlyData, PlyElement
@@ -133,6 +134,7 @@ def reconstruct_3D(depth, f):
     Reconstruct depth to 3D pointcloud with the provided focal length.
     Return:
         pcd: N X 3 array, point cloud
+        normal map: 3 X H X W image containing the vertex normals for each pixel reprojected from the point cloud
     """
     cu = depth.shape[1] / 2
     cv = depth.shape[0] / 2
@@ -144,6 +146,7 @@ def reconstruct_3D(depth, f):
     v = np.array([col for i in np.arange(width)])
     v = v.transpose(1, 0)
 
+    # Compute point cloud from depth and focal length:
     if f > 1e5:
         print('Infinit focal length!!!')
         x = u - cu
@@ -159,7 +162,13 @@ def reconstruct_3D(depth, f):
     z = np.reshape(z, (width * height, 1)).astype(np.float)
     pcd = np.concatenate((x, y, z), axis=1)
     pcd = pcd.astype(np.int)
-    return pcd
+
+    # Compute normal map from the point cloud:
+    xyz = torch.tensor(np.stack([x, y, z], axis=2),device='cuda',dtype=torch.float32).unsqueeze(0)
+    vis_normal = lambda normal: np.uint8((normal + 1) / 2 * 255)[..., ::-1]
+    normals = get_surface_normalv2(xyz).squeeze()
+
+    return pcd, vis_normal(normals.cpu().numpy())
 
 def save_point_cloud(pcd, rgb, filename, binary=True):
     """Save an RGB point cloud as a PLY file.
@@ -210,7 +219,7 @@ def save_point_cloud(pcd, rgb, filename, binary=True):
         # ---- Save ply data to disk
         np.savetxt(filename, np.column_stack((x, y, z, r, g, b)), fmt="%d %d %d %d %d %d", header=ply_head, comments='')
 
-def reconstruct_depth(depth, rgb, dir, pcd_name, focal):
+def reconstruct_from_depth(depth, rgb, dir, pcd_name, focal):
     """
     para disp: disparity, [h, w]
     para rgb: rgb image, [h, w, 3], in rgb format
@@ -222,7 +231,7 @@ def reconstruct_depth(depth, rgb, dir, pcd_name, focal):
     depth[mask] = 0
     depth = depth / depth.max() * 10000
 
-    pcd = reconstruct_3D(depth, f=focal)
+    pcd, normals = reconstruct_3D(depth, f=focal)
     rgb_n = np.reshape(rgb, (-1, 3))
     save_point_cloud(pcd, rgb_n, os.path.join(dir, pcd_name + '.ply'))
 
