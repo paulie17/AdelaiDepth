@@ -146,7 +146,7 @@ def reconstruct_3D(depth, f):
     v = np.array([col for i in np.arange(width)])
     v = v.transpose(1, 0)
 
-    # Compute point cloud from depth and focal length:
+    # Compute points' coordinates from depth and focal length:
     if f > 1e5:
         print('Infinit focal length!!!')
         x = u - cu
@@ -157,16 +157,17 @@ def reconstruct_3D(depth, f):
         y = (v - cv) * depth / f
         z = depth
 
+    # Compute normal map:
+    xyz = torch.tensor(np.stack([x, y, z], axis=2),device='cuda',dtype=torch.float32).unsqueeze(0)
+    vis_normal = lambda normal: np.uint8((normal + 1) / 2 * 255)[..., ::-1]
+    normals = get_surface_normalv2(xyz).squeeze()
+
+    # Assemble the Point Cloud
     x = np.reshape(x, (width * height, 1)).astype(np.float32)
     y = np.reshape(y, (width * height, 1)).astype(np.float32)
     z = np.reshape(z, (width * height, 1)).astype(np.float32)
     pcd = np.concatenate((x, y, z), axis=1)
     pcd = pcd.astype(np.int16)
-
-    # Compute normal map from the point cloud:
-    xyz = torch.tensor(np.stack([x, y, z], axis=2),device='cuda',dtype=torch.float32).unsqueeze(0)
-    vis_normal = lambda normal: np.uint8((normal + 1) / 2 * 255)[..., ::-1]
-    normals = get_surface_normalv2(xyz).squeeze()
 
     return pcd, vis_normal(normals.cpu().numpy())
 
@@ -223,6 +224,9 @@ def reconstruct_from_depth(depth, rgb, dir, pcd_name, focal):
     """
     para disp: disparity, [h, w]
     para rgb: rgb image, [h, w, 3], in rgb format
+
+    Returns:
+    normals: surface normal map 
     """
     rgb = np.squeeze(rgb)
     depth = np.squeeze(depth)
@@ -235,7 +239,8 @@ def reconstruct_from_depth(depth, rgb, dir, pcd_name, focal):
     
     rgb_n = np.reshape(rgb, (-1, 3))
     save_point_cloud(pcd, rgb_n, os.path.join(dir, pcd_name + '.ply'))
-
+    
+    return normals
 
 def recover_metric_depth(pred, gt):
     if type(pred).__module__ == torch.__name__:

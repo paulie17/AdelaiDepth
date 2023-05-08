@@ -136,4 +136,7 @@ if __name__ == '__main__':
         cv2.imwrite(os.path.join(image_dir_out, img_name[:-4]+'.png'), disp)
 
         # reconstruct point cloud from the depth
-        reconstruct_from_depth(depth_scaleinv, rgb[:, :, ::-1], image_dir_out, img_name[:-4]+'-pcd', focal=focal_length)
+        normal_map = reconstruct_from_depth(depth_scaleinv, rgb[:, :, ::-1], image_dir_out, img_name[:-4]+'-pcd', focal=focal_length)
+
+        # save normal map
+        cv2.imwrite(os.path.join(image_dir_out, img_name[:-4]+'-normals.png'), normal_map)
