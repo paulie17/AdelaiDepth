@@ -1,9 +1,9 @@
-Fork of AdelaiDepth that edits the colab demo, adds the option to retrieve surface normal maps and to compute depth, normals and pointclouds for entire folders and relative subdirectories.
-
-New Colab demo:  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/10QQCThzDOWXZApzpMcnWECuSoxsufkBG/view?usp=share_link)
+Fork of AdelaiDepth that adds the option to retrieve surface normal maps and to compute depth, normals and pointclouds for entire folders and relative subdirectories.
 
 
 ---
+Original Readme:
+
 # AdelaiDepth
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1rDLZBtiUgsFJrrL-xOgTVWxj6PMK9swq?usp=sharing)
 
